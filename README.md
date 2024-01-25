@@ -15,28 +15,6 @@
 - all logging must be set to a CF that is present and not to cf3:
     - if logging is set to cf3: or a missing CF, generate an error message and block commit
 
-**Interface Naming**
-- interface naming for lags is set to "lagX" where "X" is a number between 1-64
-    - if name does not comply to this standard, generate an error message and block commit
-
-**Service MTU**
-- service MTU is set to 9114
-    - if MTU is set to something other than 9114, generate an error message and allow commit
-
-**Routing Protocols**
-- if bgp/ospf/isis already present in the configuration, no changes are allowed, but if not present, allow commit
-
-**SAA Tests**
-- check for running saa tests, generate an error message if there are more than 8 continuous tests running, allow commit
-
-**QoS Policy**
-- check that a qos policy is applied to each service
-    - if qos policy is missing, generate error and block commit
-
-**CPM and MAF Filters**
-- check that cpm and maf filters are applied and enabled
-    - if they are missing or disabled, generate an error message and block commit
-    - there are occasions when an engineer would need to disable these for troubleshooting purposes, so this will be its own script that can be disabled separately.
 
 ## Router configuration
 
@@ -57,7 +35,7 @@ A:admin@r1# info
 
 ## Exec script
 
-> The reason an `exec` script is required, is because configuration candidates are unique per session. When the configuration is first entered, a copy of the running config is made specifically for that session. If we use `pyexec` to execute a `pysros` script directly, that script will be in its own session, so it would never see the session the user is running.  However, the workaround is that an exec script runs in the same session as the user, so it is able to see the same candidate configuration file.
+> The reason an `exec` script is required, is because configuration candidates are unique per session. When a `python` script is run, a new session is created. Using an `exec` script can be thought of as behaving as if two users were concurrently making the same changes.
 
 The `exec` script will get a copy of the entire candidate and pipe it into the `stdin` of the `pysros` script. At this point, the `pysros` will use the configuration that has all of the changes and it will be able to perform the required logic and then take the appropriate actions based on the results (commit/discard/log/warn/etc...)
 
@@ -90,8 +68,35 @@ def parse_config():
 
 There are caveats to consider for this `commit-script` workaround:
 
-1) When a configuration is committed using the script, the user will still see their changes in their own session until they exit and reenter even though the changes have already been committed. *This is the same behavior that a user would see if another user made the same configuration changes at the same time*
+1) It is highly recommended to always use `configure private` with this approach. *if `configure global` is used, it could cause confusion if the user does not manually run `discard` after the configuration because leftover configurations will remain*
 
-2) The users need to run the cli-alias instead of the built-in `commit` keyword. 
+3) The users need to run the cli-alias instead of the built-in `commit` keyword. 
 
-3) This approach does not work with `configure exclusive` mode.
+4) This approach does not work with `configure exclusive` mode.
+
+## Additional Ideas
+
+Here are some additional ideas that could be use-cases for commit script validations
+
+**Interface Naming**
+- interface naming for lags is set to "lagX" where "X" is a number between 1-64
+    - if name does not comply to this standard, generate an error message and block commit
+
+**Service MTU**
+- service MTU is set to 9114
+    - if MTU is set to something other than 9114, generate an error message and allow commit
+
+**Routing Protocols**
+- if bgp/ospf/isis already present in the configuration, no changes are allowed, but if not present, allow commit
+
+**SAA Tests**
+- check for running saa tests, generate an error message if there are more than 8 continuous tests running, allow commit
+
+**QoS Policy**
+- check that a qos policy is applied to each service
+    - if qos policy is missing, generate error and block commit
+
+**CPM and MAF Filters**
+- check that cpm and maf filters are applied and enabled
+    - if they are missing or disabled, generate an error message and block commit
+    - there are occasions when an engineer would need to disable these for troubleshooting purposes, so this will be its own script that can be disabled separately.
