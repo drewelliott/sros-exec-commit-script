@@ -1,0 +1,1 @@
+info json full-context / | pyexec cf3:/myscript.py
