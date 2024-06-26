@@ -23,20 +23,20 @@ def parse_cpm(cpm_state):
 def parse_log_config(config, cpm_flash_state):
     try:
         file_config = config['configure']['log']['file']
+        error_logs = []
+        for name, data in file_config.items():
+            if 'compact-flash-location' in data.keys():
+                d = data['compact-flash-location']
+                for k,v in d.items(): 
+                    cf = v.data
+                    if cf == 'cf3':
+                        my_err = "log file " + name + ":: cf3:\ is not allowed to be used for logging output"
+                        error_logs.append(my_err)
+                    elif cf not in cpm_flash_state:
+                        my_err = "log file " + name + ":: There is no compact flash installed in " + cf
+                        error_logs.append(my_err)
     except:
-        pass
-    error_logs = []
-    for name, data in file_config.items():
-        if 'compact-flash-location' in data.keys():
-            d = data['compact-flash-location']
-            for k,v in d.items(): 
-                cf = v.data
-                if cf == 'cf3':
-                    my_err = "log file " + name + ":: cf3:\ is not allowed to be used for logging output"
-                    error_logs.append(my_err)
-                elif cf not in cpm_flash_state:
-                    my_err = "log file " + name + ":: There is no compact flash installed in " + cf
-                    error_logs.append(my_err)
+        error_logs = []
     return error_logs
     
             
