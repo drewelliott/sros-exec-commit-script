@@ -5,6 +5,37 @@
 
 ### Pysros has all of the tools needed to interact with the commit API and will use whatever configuration mode the user is already in (exclusing/global/private).
 
+## I have included a [containerlab](https://containerlab.dev) demo with this repo.
+
+### Prerequisites
+
+- [ ] Containerlab [install link](https://containerlab.dev/install/)
+- [ ] SROS license key [Discord](https://discord.gg/vAyddtaEV9)
+- [ ] SROS container [containerlab](https://containerlab.dev/manual/kinds/vr-sros/)
+- [ ] Docker [install link](https://docs.docker.com/engine/install/)
+- [ ] TAC+ container [tac_plus](https://github.com/srl-wim/tac_plus/)
+
+### tacplus container
+
+In order to create the tac+ container for this lab, clone the repo at [tac_plus](https://github.com/srl-wim/tac_plus/)
+and replace the `tac_plus_example.cfg` in that repo with [our local version](tac_plus/tac_plus_example.cfg) in the [tac_plus](tac_plus/) directory.
+
+After you have replaced the files, follow their instructions to build the container.
+
+### containerlab
+
+The [topo.yml](clab/topo.yml) file contains the required information for instantiating the demo topology. The lab is built with SROS 24.3.R2. If you have acquired a different version, please be sure to update the [topo.yml](clab/topo.yml) file to match what you have.
+
+> Note that the tag must match - in out [topo.yml](clab/topo.yml) file, we have `image: vrnetlab/vr-sros:24.3.R2`, be sure your container is tagged the same
+
+### lab credentials
+
+SROS: clab-cs-r1
+
+| User   | Password | Auth Type |
+| :----- | :------: | :-------- |
+| admin  | admin    | local     |
+| noc    | noc123   | tac+      |
 
 
 ## For this script, we will be validating the following conditions each time there is a commit:
@@ -73,6 +104,10 @@ There are caveats to consider for this `commit-script` workaround:
 3) The users need to run the cli-alias instead of the built-in `commit` keyword. 
 
 4) This approach does not work with `configure exclusive` mode.
+
+5) The user will have to `discard` changes after the commit-script is successful because the changes that were executed were in the commit-script session.
+
+6) If a user is not permitted to run `commit`, they will not be able to run the commit-script.
 
 ## Additional Ideas
 
