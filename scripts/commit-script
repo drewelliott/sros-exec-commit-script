@@ -1,1 +1,1 @@
-info json full-context / | pyexec cf3:/myscript.py
+info json full-context / | pyexec tftp://172.31.255.29/validate_commit.py
